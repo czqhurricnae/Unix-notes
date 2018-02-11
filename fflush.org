@@ -1,0 +1,21 @@
+fflush(stdin)则是把stdin内的暂存器清空, 并重新读取.
+
+fflsuh(stdout) 强制输出stdout的buf, 并清空.
+
+flush(stdin)刷新标准输入缓冲区, 把输入缓冲区里的东西丢弃.
+fflush(stdout)刷新标准输出缓冲区, 把输出缓冲区里的东西打印到标准输出设备上.
+
+scanf()函数接收输入数据时, 遇以下情况结束一个数据的输入:(不是结束该scanf函数, scanf函数仅在每一个数据域均有数据, 并按回车后结束).
+  ①遇空格,回车,跳格,键.
+  ②遇宽度结束.
+  ③遇非法输入.
+键盘缓冲区就可能有残余信息问题.
+scanf()函数应该只是扫瞄stdin流, 这个残存信息是在stdin中.
+解决就要在scanf()函数之后加个fflush(stdin).
+
+fflush(stdout)刷新stdout, 因为printf是缓冲输出, 一般情况下stdout是行缓冲.     
+单进程环境中这个函数在这儿没什么用, 在多进程/多线程时就有用了.
+
+stdout是标准输出.
+有时候, 我们输出到stdout的内容不能及时输出, 使因为stdout的缓冲区没有满或者其他原因, fflush(stdout)就是强迫把stdout内容输出并清空stdout.
+
