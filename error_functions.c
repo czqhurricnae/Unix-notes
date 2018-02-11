@@ -159,3 +159,68 @@ void err_exit(const char *format, ...)
 
     terminate(FALSE);
 }
+
+/**
+ * Function: errExitEN()
+ * Description:
+ *    只打印与errnum参数中给定的错误号(error number)
+ * Calls:
+ * Called By:
+ * Input:
+ * Output:
+ * Return:
+ * Table Accessed:
+ * Table Updated:
+ * Others:
+ **/
+void errExitEN(int errnum, const char *format, ...)
+{
+    va_list argList;
+
+    va_start(argList, format);
+    outputError(TRUE, errnum, TRUE, format, argList);
+    va_end(argList);
+
+    terminate(TRUE);
+}
+
+void fatal(const char *format, ...)
+{
+    va_list argList;
+
+    va_start(argList, format);
+    outputError(FALSE, 0, TRUE, format, argList);
+    va_end(argList);
+
+    terminate(TRUE);
+}
+
+void usageErr(const char *format, ...)
+{
+    va_list argList;
+
+    fflush(stdout);
+
+    fprintf(stderr, "Usage: ");
+    va_start(argList, format);
+    vfprintf(stderr, format, argList);
+    va_end(argList);
+
+    fflush(stderr);    /* In case stderr is not line-buffered */
+    exit(EXIT_FAILURE);
+}
+
+void cmdLineErr(const char *format, ...)
+{
+    va_list argList;
+
+    fflush(stdout);
+
+    fprintf(stderr, "Command-line usage error: ");
+    va_start(argList, format);
+    vfprintf(stderr, format, argList);
+    va_end(argList);
+
+    fflush(stderr);
+    exit(EXIT_FAILURE);
+}
