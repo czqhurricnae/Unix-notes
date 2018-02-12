@@ -152,3 +152,158 @@ Message from main()
 ERROR [EDEADLK Resource deadlock avoided] pthread_join
 
 注意:pthread_self后需加括号().
+
+* 线程同步
+
+#+headers: :cmdline "1000000"
+#+BEGIN_SRC C :includes <stdio.h> "/Users/c/Unix/error_functions.c" "/Users/c/Unix/get_num.c" :results output list :exports both
+  /* thread_incr.c
+
+     This program employs two POSIX threads that increment the same global
+     variable, without using any synchronization method. As a consequence,
+     updates are sometimes lost.
+
+     See also thread_incr_mutex.c.
+  ,*/
+  #include <pthread.h>
+  #include "/Users/c/Unix/tlpi_hdr.h"
+
+  static volatile int glob = 0;   /* "volatile" prevents compiler optimizations
+                                     of arithmetic operations on 'glob' */
+  static void *                   /* Loop 'arg' times incrementing 'glob' */
+  threadFunc(void *arg)
+  {
+      int loops = *((int *) arg);
+      int loc, j;
+
+      for (j = 0; j < loops; j++) {
+          loc = glob;
+          loc++;
+          glob = loc;
+      }
+
+      return NULL;
+  }
+  int
+  main(int argc, char *argv[])
+  {
+      pthread_t t1, t2;
+      int loops, s;
+
+      loops = (argc > 1) ? getInt(argv[1], GN_GT_0, "num-loops") : 10000000;
+
+      s = pthread_create(&t1, NULL, threadFunc, &loops);
+      if (s != 0)
+          errExitEN(s, "pthread_create");
+      s = pthread_create(&t2, NULL, threadFunc, &loops);
+      if (s != 0)
+          errExitEN(s, "pthread_create");
+
+      s = pthread_join(t1, NULL);
+      if (s != 0)
+          errExitEN(s, "pthread_join");
+      s = pthread_join(t2, NULL);
+      if (s != 0)
+          errExitEN(s, "pthread_join");
+
+      printf("glob = %d\n", glob);
+      exit(EXIT_SUCCESS);
+  }
+#+END_SRC
+
+#+RESULTS:
+: - glob = 1107015
+
+* 静态分配的互斥量
+
+#+header: :cmdline "100" :includes <stdio.h> "/Users/c/Unix/error_functions.c" "/Users/c/Unix/get_num.c"
+#+BEGIN_SRC C :results output list :exports both
+  /**
+   ,*
+   ,* @copyright:
+   ,* @file: 线程.org[*Org Src 线程.org[ C ]*]
+   ,* @since: 2018-02-12
+   ,* @author: czq | 7160844@qq.com
+   ,* @description:
+   ,*     使用互斥量保护全局变量的访问 
+   ,* @usage:
+   ,* @others:
+   ,* @TODO:
+   ,* @Revision History:
+   ,* Date            Rel Ver.        Notes
+   ,* 2018-02-12        1.0             开始创建
+   ,*
+   ,**/
+  #include <pthread.h>
+  #include "/Users/c/Unix/tlpi_hdr.h"
+
+  static int glob = 0;
+  static pthread_mutex_t mtx = PTHREAD_MUTEX_INITIALIZER;
+
+  static void *
+  threadFunc(void *arg)
+  {
+      int loops = *((int *)arg);
+      int loc, j, s;
+
+      for (j = 0; j < loops; j++)
+      {
+          s = pthread_mutex_lock(&mtx);
+          if (s != 0)
+          {
+              errExitEN(s, "pthread_mutex_lock");
+          }
+
+          loc = glob;
+          loc++;
+          glob = loc;
+
+          s = pthread_mutex_unlock(&mtx);
+          if (s != 0)
+          {
+              errExitEN(s, "pthread_mutex_unlock");
+          }
+      }
+
+      return NULL;
+  }
+
+  int
+  main(int argc, char *argv[])
+  {
+      pthread_t t1, t2;
+      int loops, s;
+
+      loops = (argc > 1) ? getInt(argv[1], GN_GT_0, "num-loops") : 1000000;
+
+      s = pthread_create(&t1, NULL, threadFunc,&loops);
+      if (s != 0)
+      {
+          errExitEN(s, "pthread_create");
+      }
+
+      s = pthread_create(&t2, NULL, threadFunc,&loops);
+      if (s != 0)
+      {
+          errExitEN(s, "pthread_create");
+      }
+
+      s = pthread_join(t1, NULL);
+      if (s != 0)
+      {
+          errExitEN(s, "pthread_join");
+      }
+
+      s = pthread_join(t2, NULL);
+      if (s != 0)
+      {
+          errExitEN(s, "pthread_join");
+      }
+
+      printf("glob = %d\n", glob);
+      exit(EXIT_SUCCESS);
+  }
+#+END_SRC
+
+#+RESULTS:
+: - glob = 200
