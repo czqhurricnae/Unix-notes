@@ -22,8 +22,7 @@
 #ifdef __GNUC__
 __attribute__ ((__noreturn__))
 #endif
-static void
-terminate(Boolean useExit3)
+static void terminate(Boolean useExit3)
 {
     char *s;
 
@@ -47,8 +46,7 @@ terminate(Boolean useExit3)
     }
 }
 
-static void
-outputError(Boolean useErr, int err, Boolean flushStdout,
+static void outputError(Boolean useErr, int err, Boolean flushStdout,
     const char *format, va_list ap)
 {
    #define BUF_SIZE 500
