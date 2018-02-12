@@ -9,7 +9,7 @@ static void *threadFunc(void *arg)
     return (void *) strlen(s);
 }
 
-int main(int argc, char *argv[])
+int main()
 {
     pthread_t t1;
     void *res;
@@ -30,4 +30,6 @@ int main(int argc, char *argv[])
     printf("Thread returned %ld\n", (long)res);
 
     exit(EXIT_SUCCESS);
+
+    return 0;
 }
